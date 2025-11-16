@@ -4,17 +4,28 @@ FROM python:3.9-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy requirements
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Copy requirements first for better caching
 COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy all application code to container
 COPY . .
 
-RUN  mkdir -p models
+# Create necessary directories
+RUN mkdir -p models
 
-# Specify default command to run the application (customize as needed)
+# Set PYTHONPATH to include src directory
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
+# Expose a port (for future web service if needed)
+EXPOSE 8000
+
+# Specify default command to run the application
 CMD ["python", "src/train.py"]
